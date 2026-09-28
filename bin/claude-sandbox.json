@@ -1,0 +1,55 @@
+{
+  "sandbox": {
+    "enabled": true,
+    "failIfUnavailable": true,
+    "autoAllowBashIfSandboxed": true,
+    "allowUnsandboxedCommands": true,
+    "network": {
+      "allowedDomains": [@DOMAINS@],
+      "strictAllowlist": true,
+      "allowLocalBinding": true
+    },
+    "filesystem": {
+      "denyWrite": ["@ROOT@/bin", "@ROOT@/tools", "@ROOT@/vendor", "@ROOT@/bundle", "@ROOT@/.claude", "@ROOT@/.kiro", "@ROOT@/kit.config.json"],
+      "denyRead": [
+        "@HOME@/.ssh", "@HOME@/.aws", "@HOME@/.gnupg", "@HOME@/.config/gh", "@HOME@/.netrc",
+        "@HOME@/.kube", "@HOME@/.docker/config.json", "@HOME@/.npmrc", "@HOME@/.git-credentials",
+        "@HOME@/.config/gcloud", "@HOME@/Library/Keychains"
+      ]
+    }
+  },
+  "permissions": {
+    "disableBypassPermissionsMode": "disable",
+    "allow": ["Bash(hyperframes:*)", "Bash(deck:*)", "Bash(mpg:*)"],
+    "deny": [
+      "WebFetch",
+      "WebSearch",
+      "SendMessage",
+      "ListAgents",
+      "RemoteTrigger",
+      "Artifact",
+      "ArtifactComments",
+      "ArtifactData",
+      "SendUserFile",
+      "PushNotification",
+      "Read(~/.ssh/**)",
+      "Read(~/.aws/**)",
+      "Read(~/.gnupg/**)",
+      "Read(~/.config/gh/**)",
+      "Read(~/.config/gcloud/**)",
+      "Read(~/.netrc)",
+      "Read(~/.kube/**)",
+      "Read(~/.docker/config.json)",
+      "Read(~/.npmrc)",
+      "Read(~/.git-credentials)",
+      "Read(~/Library/Keychains/**)",
+      "Edit(/@ROOT@/bin/**)",
+      "Edit(/@ROOT@/tools/**)",
+      "Edit(/@ROOT@/vendor/**)",
+      "Edit(/@ROOT@/bundle/**)",
+      "Edit(/@ROOT@/.claude/**)",
+      "Edit(/@ROOT@/.kiro/**)",
+      "Edit(/@ROOT@/kit.config.json)"
+    ]
+  }
+}

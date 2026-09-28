@@ -1,0 +1,25 @@
+/* Deck engine: stage, click steps, overlays. Looks come from the theme. */
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:#000;overflow:hidden}
+#stage{position:absolute;left:50%;top:50%;width:1920px;height:1080px;overflow:hidden;transform-origin:center;user-select:none;cursor:default}
+.slide{position:absolute;inset:0;display:none}
+.slide.cur{display:block}
+[data-step]:not(.on){visibility:hidden}
+[data-until].gone{visibility:hidden!important}
+.words>span{visibility:hidden}
+.words>span.v{visibility:visible}
+[data-fx=blocks]>i{flex:1;visibility:hidden}
+[data-fx=blocks]>i.v{visibility:visible!important}
+[data-fx=flash]:not(.on){display:none}
+#cursor{position:absolute;z-index:40;left:0;top:0;display:none;pointer-events:none}
+.ov{position:fixed;z-index:100;display:none;flex-direction:column}
+.ov.show{display:flex}
+#notes{right:12px;top:12px;bottom:12px;width:min(560px,44vw)}
+#notes .nb{flex:1;overflow:auto}
+#grid{inset:5vh 5vw}
+#grid .gb{flex:1;overflow:auto;display:grid;align-content:start;grid-template-columns:repeat(4,1fr);gap:14px;padding:14px}
+#grid button{all:unset;cursor:pointer;display:flex;flex-direction:column;gap:8px}
+#help{right:16px;bottom:16px;width:380px}
+#hint{position:fixed;right:16px;top:16px;z-index:90;transition:opacity .3s}
+#hint.gone{opacity:0;pointer-events:none}
+@media print{#hint,.ov{display:none!important}}

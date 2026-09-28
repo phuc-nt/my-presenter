@@ -1,0 +1,57 @@
+#!/usr/bin/env bash
+# Starts Claude Code for this kit:
+# - bin/offline first on PATH: `hyperframes`, `deck` and `mpg` are the kit's tools,
+#   each under the offline profile bin/offline/offline.sb (no network beyond
+#   localhost, writes only in the repo and the temp dirs);
+# - project and local settings only, so skills in ~/.claude/skills stay out
+#   (the official HyperFrames skills use the same names as the secure ones);
+# - no MCP servers and no claude.ai connectors: they would be connections of
+#   their own, outside the sandbox;
+# - bin/claude-sandbox.json: Bash runs in Claude Code's sandbox. The network
+#   allowlist is Gemini when TTS is on, and empty when it is off. The model
+#   connection of Claude Code itself is not part of that sandbox;
+# - secrets in the environment (tokens, passwords, keys) are not passed on.
+# Usage: bin/claude [claude options…]      KIT_TTS=none bin/claude   (one run without TTS)
+set -euo pipefail
+. "$(dirname "${BASH_SOURCE[0]}")/kit-env"
+
+# Bypass mode runs every command without asking and without the sandbox.
+for a in "$@"; do
+  case "$a" in
+    --dangerously-skip-permissions|--allow-dangerously-skip-permissions|bypassPermissions|--permission-mode=bypassPermissions)
+      echo "kit: $a turns the sandbox off; this launcher does not start a session that way." >&2
+      exit 1 ;;
+  esac
+done
+
+if [ "$tts" = gemini ]; then
+  domains='"generativelanguage.googleapis.com"'
+else
+  domains=''
+fi
+
+# Drop environment variables that look like credentials. Kept: the harness's own
+# (ANTHROPIC_*, CLAUDE_*), cloud credentials when the harness runs on Bedrock or
+# Vertex, and the Gemini key when TTS is on.
+for name in $(compgen -e); do
+  case "$name" in
+    ANTHROPIC_*|CLAUDE_*|KIT_*) continue ;;
+    GEMINI_API_KEY|GOOGLE_API_KEY) [ "$tts" = gemini ] && continue; unset "$name"; continue ;;
+    AWS_*) [ -n "${CLAUDE_CODE_USE_BEDROCK:-}" ] && continue ;;
+    GOOGLE_APPLICATION_CREDENTIALS|GOOGLE_CLOUD_*|CLOUD_ML_*) [ -n "${CLAUDE_CODE_USE_VERTEX:-}" ] && continue ;;
+  esac
+  case "$(printf %s "$name" | tr '[:lower:]' '[:upper:]')" in
+    *TOKEN*|*SECRET*|*PASSWORD*|*PASSWD*|*API_KEY*|*APIKEY*|*ACCESS_KEY*|*PRIVATE_KEY*|*CREDENTIAL*|*AUTH*|*COOKIE*|*SESSION_KEY*|AWS_*|GH_*|GITHUB_*|NPM_*|DOCKER_*|SSH_AUTH_SOCK)
+      unset "$name" ;;
+  esac
+done
+
+export KIT_TTS="$tts" KIT_ROOT="$root"
+export PATH="$root/bin/offline:$PATH"
+[ -d "$root/bundle/prefix/bin" ] && PATH="$root/bin/offline:$root/bundle/prefix/bin:${PATH#"$root/bin/offline:"}"
+# No telemetry, error reports or update checks from the harness, and no
+# claude.ai connectors (Gmail, Drive and the like) in the session.
+export CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=1 DISABLE_AUTOUPDATER=1 ENABLE_CLAUDEAI_MCP_SERVERS=false
+cd "$root"
+exec claude --setting-sources project,local --strict-mcp-config \
+  --settings "$(sed -e "s|@ROOT@|$root|g" -e "s|@HOME@|$HOME|g" -e "s|@DOMAINS@|$domains|" "$root/bin/claude-sandbox.json")" "$@"

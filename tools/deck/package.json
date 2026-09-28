@@ -1,0 +1,10 @@
+{
+  "name": "my-presenter-deck",
+  "version": "0.1.0",
+  "description": "Single-file HTML decks with click builds and speaker notes. No packages of its own; screenshots use the Chrome and puppeteer-core that the HyperFrames bundle already needs.",
+  "type": "module",
+  "bin": { "deck": "bin/deck.js" },
+  "scripts": { "test": "node --test 'test/*.test.js'" },
+  "engines": { "node": ">=20" },
+  "license": "MIT"
+}

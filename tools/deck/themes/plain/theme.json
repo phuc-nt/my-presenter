@@ -1,0 +1,10 @@
+{
+  "name": "plain",
+  "description": "Neutral dark background, Be Vietnam Pro type and a progress bar at the bottom; suits reports and lectures",
+  "fonts": [
+    { "family": "BVP", "weight": "500", "file": "BeVietnamPro-Medium-VN" },
+    { "family": "BVP", "weight": "700", "file": "BeVietnamPro-Bold-VN" },
+    { "family": "InterVN", "weight": "100 900", "file": "Inter-VN" }
+  ],
+  "chrome": {}
+}

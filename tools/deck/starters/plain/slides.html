@@ -1,0 +1,23 @@
+<!-- Mỗi <section class="slide"> là một slide. data-step="N": hiện ở lần bấm thứ N (0 = có sẵn).
+     data-fx: fade | pop | wipe | type | words | count | drop | blocks | flash. -->
+<section class="slide cover" data-task="Mở đầu">
+  <h1 data-step="0" data-fx="fade">Tên bài trình bày</h1>
+  <p class="lead" data-step="0" data-fx="fade">Một câu nói rõ người nghe sẽ nhận được gì.</p>
+  <p class="by">Người trình bày: …</p>
+</section>
+
+<section class="slide" data-task="Ba ý chính">
+  <h2>Ba ý chính</h2>
+  <div class="bl">
+    <div class="b" data-step="1" data-fx="pop"><span class="n">1</span><p><b>Ý thứ nhất</b>: nói gọn trong một dòng</p></div>
+    <div class="b" data-step="2" data-fx="pop"><span class="n">2</span><p><b>Ý thứ hai</b>: nói gọn trong một dòng</p></div>
+    <div class="b" data-step="3" data-fx="pop"><span class="n">3</span><p><b>Ý thứ ba</b>: nói gọn trong một dòng</p></div>
+  </div>
+</section>
+
+<section class="slide" data-task="Kết">
+  <h2>Bước tiếp theo</h2>
+  <p class="lead">Điều bạn muốn người nghe làm sau buổi này.</p>
+  <p style="margin-top:60px" data-step="1" data-fx="pop"><span class="btn" id="cta">Liên hệ</span></p>
+  <i data-step="1" data-hook="click" data-target="#cta" data-delay="350"></i>
+</section>

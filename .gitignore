@@ -1,0 +1,24 @@
+# The extracted HyperFrames bundle and its skills (bin/setup); rebuilt from the tarball.
+/bundle/
+/.setup.*/
+/.claude/skills/*
+!/.claude/skills/vi-explainer-video/
+!/.claude/skills/pptx-deck/
+!/.claude/skills/html-deck/
+/.kiro/
+# Local install choice (bin/setup): TTS on or off.
+/kit.config.json
+# Work products: video projects (voice, music, renders) and built decks.
+/videos/
+/decks/
+out/
+node_modules/
+.DS_Store
+.env
+.env.*
+/.claude/.cc-writes/
+# Personal Claude Code settings and notes; never shared.
+/.claude/settings.local.json
+/CLAUDE.local.md
+# npm writes logs into the cache it runs from.
+/vendor/npm-cache/_logs/

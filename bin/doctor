@@ -1,0 +1,82 @@
+#!/bin/bash
+# bin/doctor: is this machine ready? Reads only; installs nothing; uses no network.
+# bin/doctor --net: also probes the network from where it runs. It refuses to run
+# outside a sandbox; run it inside a bin/claude session to see what that session
+# can reach: Gemini only with TTS on, nothing with TTS off. The probes carry no
+# data, and the Gemini key is sent (to Gemini only) only when TTS is on.
+# Exit 0 when everything needed for the chosen mode is there.
+here=$(cd "$(dirname "$0")" && pwd)
+. "$here/kit-env" || exit 1
+bad=0
+ok()   { printf '  ✓ %-24s %s\n' "$1" "$2"; }
+miss() { printf '  ✗ %-24s %s\n' "$1" "$2"; bad=$((bad+1)); }
+skip() { printf '  – %-24s %s\n' "$1" "$2"; }
+have() { command -v "$1" >/dev/null 2>&1; }
+
+echo "my-presenter · TTS: $tts"
+echo "General"
+if have node; then v=$(node -p 'process.versions.node'); [ "${v%%.*}" -ge 22 ] && ok "Node.js" "$v" || miss "Node.js" "$v; 22 or newer is required"; else miss "Node.js" "not installed"; fi
+have claude && ok "Claude Code" "$(claude --version 2>/dev/null | head -1)" || miss "Claude Code" "not on PATH; bin/claude starts it"
+[ -f "$root/kit.config.json" ] && ok "kit.config.json" "" || miss "kit.config.json" "run bin/setup"
+if [ "$(uname)" = Darwin ]; then
+  have sandbox-exec && ok "sandbox-exec" "network lock for the tools" || miss "sandbox-exec" "missing; the tools will refuse to run"
+  if scutil --proxy 2>/dev/null | grep -Eq '(HTTP|HTTPS|SOCKS)Enable : 1|ProxyAutoConfigEnable : 1'; then
+    skip "system proxy" "set; the offline profile keeps the tools from reading it"
+  else
+    ok "system proxy" "none"
+  fi
+else
+  miss "operating system" "the offline profile exists for macOS only"
+fi
+
+chrome=${HYPERFRAMES_BROWSER_PATH:-}
+if [ -z "$chrome" ]; then
+  chrome=$(ls -d "$HOME"/.cache/puppeteer/chrome-headless-shell/*/*/chrome-headless-shell 2>/dev/null | sort | tail -1)
+  [ -n "$chrome" ] || for c in "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" "/Applications/Chromium.app/Contents/MacOS/Chromium"; do [ -x "$c" ] && { chrome=$c; break; }; done
+fi
+[ -n "$chrome" ] && [ -x "$chrome" ] && ok "Chrome" "$(basename "$chrome")" || miss "Chrome" "set HYPERFRAMES_BROWSER_PATH"
+
+echo "PPTX slides"
+[ -d "$root/tools/pptx/node_modules/pptxgenjs" ] && ok "npm packages (tools/pptx)" "" || miss "npm packages (tools/pptx)" "run bin/setup"
+echo "HTML slides"
+[ -f "$root/tools/deck/bin/deck.js" ] && ok "tools/deck" "no external packages" || miss "tools/deck" "source missing"
+[ -d "$root/bundle/prefix/lib/node_modules/@hyperframes/cli/node_modules/puppeteer-core" ] && ok "slide screenshots" "puppeteer-core from the bundle" || miss "slide screenshots" "needs the bundle (bin/setup <bundle>); build works, deck shots does not"
+
+echo "Video"
+if [ -x "$root/bundle/prefix/bin/hyperframes" ]; then ok "HyperFrames" "$("$root/bundle/prefix/bin/hyperframes" --version 2>/dev/null | tail -1)"; else miss "HyperFrames" "run bin/setup <bundle>"; fi
+[ -f "$root/.claude/skills/faceless-explainer/scripts/assemble-index.mjs" ] && ok "HyperFrames skills" "" || miss "HyperFrames skills" "run bin/setup <bundle>"
+have ffmpeg && have ffprobe && ok "ffmpeg, ffprobe" "" || miss "ffmpeg, ffprobe" "not installed"
+
+echo "Narration"
+if [ "$tts" = gemini ]; then
+  if [ -n "${GEMINI_API_KEY:-}" ] || grep -Eq '^[[:space:]]*export GEMINI_API_KEY=' "$HOME/.zshrc" 2>/dev/null; then ok "GEMINI_API_KEY" "set (value not shown)"; else miss "GEMINI_API_KEY" "not set; see GUIDE.md"; fi
+  w=; for c in whisper-cli whisper-cpp; do have $c && w=$c; done
+  [ -n "$w" ] && ok "whisper" "$w" || miss "whisper" "whisper-cpp not installed"
+  m=$(ls "${HYPERFRAMES_WHISPER_MODEL:-/nonexistent}" "$HOME"/.cache/hyperframes/whisper/models/ggml-*.bin /opt/homebrew/share/whisper-cpp/ggml-*.bin 2>/dev/null | head -1)
+  [ -n "$m" ] && ok "whisper model" "$(basename "$m")" || miss "whisper model" "see GUIDE.md"
+  if have python3 && python3 -c 'import google.genai, numpy' 2>/dev/null; then ok "python: google-genai" "for Lyria music"; else skip "python: google-genai" "missing; videos work, without background music"; fi
+else
+  skip "off" "silent videos with subtitles; no key, whisper or Python needed"
+fi
+
+if [ "${1:-}" = --net ]; then
+  echo "Network (probed from here)"
+  # sandbox-exec cannot nest: when this probe succeeds, nothing holds the network shut.
+  if ! have sandbox-exec || sandbox-exec -p '(version 1)(allow default)' /usr/bin/true 2>/dev/null; then
+    miss "sandbox" "not inside one; --net runs only inside a bin/claude session"
+  else
+    code() { curl -sS -m 12 -o /dev/null -w '%{http_code}' "$@" 2>/dev/null; }
+    c=$(code https://example.com); c=${c:-000}
+    [ "$c" = 000 ] && ok "other hosts" "blocked" || miss "other hosts" "example.com answered (HTTP $c)"
+    if [ "$tts" = gemini ]; then
+      g=$(code https://generativelanguage.googleapis.com/v1beta/models ${GEMINI_API_KEY:+-H "x-goog-api-key: $GEMINI_API_KEY"}); g=${g:-000}
+      case "$g" in 200) ok "Gemini" "reachable, key accepted" ;; 000) miss "Gemini" "blocked, or no network" ;; *) miss "Gemini" "reachable, but HTTP $g (key?)" ;; esac
+    else
+      g=$(code https://generativelanguage.googleapis.com/v1beta/models); g=${g:-000}
+      [ "$g" = 000 ] && ok "Gemini" "blocked (TTS off)" || miss "Gemini" "reachable (HTTP $g) with TTS off"
+    fi
+  fi
+fi
+echo
+[ $bad -eq 0 ] && echo "Ready." || echo "$bad item(s) missing."
+exit $((bad>0))

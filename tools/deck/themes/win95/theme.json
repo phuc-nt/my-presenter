@@ -1,0 +1,16 @@
+{
+  "name": "win95",
+  "description": "A Windows 95 desktop: teal background, raised grey windows, pixel type, a taskbar and a boot screen",
+  "fonts": [
+    { "family": "VT323", "file": "VT323-VN" },
+    { "family": "BVP", "weight": "500", "file": "BeVietnamPro-Medium-VN" },
+    { "family": "BVP", "weight": "700", "file": "BeVietnamPro-Bold-VN" },
+    { "family": "InterVN", "weight": "100 900", "file": "Inter-VN" }
+  ],
+  "chrome": {
+    "start": { "icon": "shelf", "label": "Start" },
+    "tray": { "icon": "user" },
+    "desktop": [],
+    "boot": []
+  }
+}

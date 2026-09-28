@@ -1,0 +1,45 @@
+(version 1)
+; Profile for the tools in bin/offline. They run outside Claude Code's sandbox
+; (Chrome cannot start inside it), so this profile takes its place.
+; Parameters: ROOT, the repo; TMP, a temp dir that bin/offline/run makes per run.
+
+(allow default)
+
+; Network: localhost only. No DNS (mDNSResponder is a unix socket, blocked below).
+(deny network-outbound)
+(deny system-socket (socket-domain AF_ROUTE))
+(allow network-outbound (remote ip "localhost:*"))
+; Unix sockets only inside the repo and the run's own temp dir. This keeps out
+; docker.sock, the ssh agent, tmux, and other programs' sockets in /tmp, any of
+; which could act for the tool outside this profile.
+(allow network-outbound (subpath (param "ROOT")) (subpath (param "TMP")))
+
+; Services that would do the network for the tool: opening a URL in another app
+; (LaunchServices), background downloads, Apple Events to other apps, and the
+; system proxy settings (a proxy on localhost would reach the internet).
+(deny mach-lookup
+  (global-name-regex #"^com\.apple\.coreservices\.")
+  (global-name-regex #"^com\.apple\.lsd\.")
+  (global-name-regex #"^com\.apple\.nsurlsessiond")
+  (global-name "com.apple.SystemConfiguration.configd"))
+(deny appleevent-send)
+
+; Writes: the repo and the temp dirs only.
+(deny file-write*)
+(allow file-write*
+  (subpath (param "ROOT"))
+  (subpath (param "TMP"))
+  (subpath "/private/var/folders")
+  (literal "/dev/null")
+  (literal "/dev/stdout")
+  (literal "/dev/stderr")
+  (regex #"^/dev/tty")
+  (regex #"^/dev/fd/"))
+; The kit's own code stays read-only, so a tool cannot rewrite the wrappers or the skills.
+(deny file-write*
+  (subpath (string-append (param "ROOT") "/bin"))
+  (subpath (string-append (param "ROOT") "/tools"))
+  (subpath (string-append (param "ROOT") "/vendor"))
+  (subpath (string-append (param "ROOT") "/bundle"))
+  (subpath (string-append (param "ROOT") "/.claude"))
+  (literal (string-append (param "ROOT") "/kit.config.json")))

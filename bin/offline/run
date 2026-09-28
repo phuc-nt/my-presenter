@@ -1,0 +1,36 @@
+# Sourced by the wrappers in this folder: run_offline <program> [args…]
+# runs it under offline.sb. On systems without sandbox-exec the tool refuses to
+# run unless KIT_ALLOW_NO_PROFILE=1, because nothing would hold the network shut.
+#
+# macOS cannot put a sandbox inside a sandbox. When the probe below fails, this
+# process is already inside one (Claude Code's, started by bin/claude, which
+# closes the network itself), so the program runs directly under that.
+# Chrome cannot start in there: for render, snapshot, check and shots the agent
+# runs the tool outside the session sandbox, and this profile takes over.
+kit_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+run_offline() {
+  # A proxy on localhost would carry traffic past the profile.
+  unset http_proxy https_proxy HTTP_PROXY HTTPS_PROXY all_proxy ALL_PROXY ftp_proxy FTP_PROXY
+  if command -v sandbox-exec >/dev/null; then
+    if sandbox-exec -p '(version 1)(allow default)' /usr/bin/true 2>/dev/null; then
+      [ -z "${KIT_DEBUG:-}" ] || echo "kit: applying offline.sb" >&2
+      # A temp dir of its own: the profile lets the tool reach unix sockets only
+      # here and in the repo, not those of other programs in /tmp. The path is
+      # short because a socket path may not exceed 104 bytes.
+      kit_tmp="$(cd "$(mktemp -d /tmp/kit.XXXXXX)" && pwd -P)"
+      trap 'rm -rf "$kit_tmp"' EXIT
+      export TMPDIR="$kit_tmp/"
+      rc=0; sandbox-exec -D ROOT="$kit_root" -D TMP="$kit_tmp" -f "$kit_root/bin/offline/offline.sb" "$@" || rc=$?
+      exit $rc
+    fi
+    [ -z "${KIT_DEBUG:-}" ] || echo "kit: already sandboxed, running directly" >&2
+    rc=0; "$@" || rc=$?
+    [ $rc -eq 0 ] || echo "kit: ${kit_tool:-the tool} ran inside the session sandbox, where Chrome cannot start. If the error is about the browser, run the same command again as a command of its own (no cd, &&, or pipes) with the Bash sandbox disabled. That is pre-approved for ${kit_tool:-this tool}, which then runs under the kit's own offline profile: no network, writes only inside the repo." >&2
+    exit $rc
+  elif [ "${KIT_ALLOW_NO_PROFILE:-}" = 1 ]; then
+    exec "$@"
+  else
+    echo "kit: sandbox-exec not found; the offline profile cannot be applied (macOS only). Set KIT_ALLOW_NO_PROFILE=1 to run without it." >&2
+    exit 1
+  fi
+}

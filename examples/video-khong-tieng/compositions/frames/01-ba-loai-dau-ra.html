@@ -1,0 +1,43 @@
+<template>
+  <style>
+    @font-face { font-family: "Plus Jakarta Sans"; src: url("assets/fonts/PlusJakartaSans-VN.woff2") format("woff2"); font-weight: 200 800; font-style: normal; font-display: block; }
+    @font-face { font-family: "JetBrains Mono"; src: url("assets/fonts/JetBrainsMono-VN.woff2") format("woff2"); font-weight: 100 800; font-style: normal; font-display: block; }
+    #root { position:absolute; left:0; top:0; width:1920px; height:1080px; overflow:hidden; color:#F5F3FF; font-family:"Plus Jakarta Sans",sans-serif; }
+    #f01-bg { position:absolute; inset:0; background:#070817; }
+    .f01-glow { position:absolute; width:800px; height:800px; border-radius:50%; opacity:.45; }
+    #f01-g1 { left:-200px; top:-260px; background:radial-gradient(circle,#8B5CF6 0%,rgba(139,92,246,0) 68%); }
+    #f01-g2 { right:-240px; top:300px; background:radial-gradient(circle,#60A5FA 0%,rgba(96,165,250,0) 68%); }
+    #f01-kicker { position:absolute; left:100px; top:84px; font:600 26px/1 "JetBrains Mono",monospace; letter-spacing:.16em; color:#AEACD6; }
+    #f01-h { position:absolute; left:100px; top:150px; font-weight:800; font-size:100px; line-height:1.14; letter-spacing:-.03em; }
+    #f01-h span { background:linear-gradient(100deg,#F0ABFC 0%,#A78BFA 45%,#60A5FA 100%); -webkit-background-clip:text; background-clip:text; color:transparent; padding-bottom:.12em; }
+    .f01-card { position:absolute; top:400px; width:540px; height:400px; box-sizing:border-box; padding:48px; border-radius:24px; background:linear-gradient(180deg,#15163AF0,#0C0D2AF0); border:1.5px solid rgba(196,181,253,.26); box-shadow:0 24px 60px rgba(3,2,20,.55), inset 0 1px 0 rgba(255,255,255,.08); }
+    .f01-card i { display:block; font:600 26px/1 "JetBrains Mono",monospace; font-style:normal; color:#C4B5FD; letter-spacing:.1em; }
+    .f01-card b { display:block; font-size:72px; line-height:1.2; font-weight:800; margin-top:36px; }
+    .f01-card p { font-size:32px; line-height:1.4; color:#AEACD6; margin:18px 0 0; font-weight:500; }
+  </style>
+  <div id="root" data-composition-id="01-ba-loai-dau-ra" data-width="1920" data-height="1080" data-start="0" data-duration="6.903">
+    <div id="f01-bg" class="clip" data-start="0" data-duration="6.903" data-track-index="0"></div>
+    <div id="f01-g1" class="f01-glow"></div><div id="f01-g2" class="f01-glow"></div>
+    <div id="f01-kicker">01 · BỘ CÔNG CỤ TRÌNH BÀY</div>
+    <div id="f01-h">Một kho mã, <span>ba loại đầu ra</span></div>
+    <div id="f01-c1" class="f01-card" style="left:100px"><i>.PPTX</i><b>PowerPoint</b><p>Sửa được, có bước bấm</p></div>
+    <div id="f01-c2" class="f01-card" style="left:690px"><i>.HTML</i><b>Slide HTML</b><p>Một tệp, nhiều chuyển động</p></div>
+    <div id="f01-c3" class="f01-card" style="left:1280px"><i>.MP4</i><b>Video</b><p>Có phụ đề tiếng Việt</p></div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+  <script>
+    (function () {
+    window.__timelines = window.__timelines || {};
+    var tl = gsap.timeline({ paused: true });
+    tl.fromTo("#f01-g1", { x: 0, y: 0 }, { x: 60, y: 40, duration: 6.4, ease: "sine.inOut" }, 0);
+    tl.fromTo("#f01-g2", { x: 0, y: 0 }, { x: -50, y: -30, duration: 6.4, ease: "sine.inOut" }, 0);
+    tl.fromTo("#f01-kicker", { autoAlpha: 0, y: 30 }, { autoAlpha: 1, y: 0, duration: 0.5, ease: "power3.out" }, 0.1);
+    tl.fromTo("#f01-h", { autoAlpha: 0, y: 110 }, { autoAlpha: 1, y: 0, duration: 0.6, ease: "power3.out" }, 0.3);
+    tl.fromTo("#f01-c1", { autoAlpha: 0, y: 110 }, { autoAlpha: 1, y: 0, duration: 0.5, ease: "power3.out" }, 3.18);
+    tl.fromTo("#f01-c2", { autoAlpha: 0, y: 110 }, { autoAlpha: 1, y: 0, duration: 0.5, ease: "power3.out" }, 4.56);
+    tl.fromTo("#f01-c3", { autoAlpha: 0, y: 110 }, { autoAlpha: 1, y: 0, duration: 0.5, ease: "power3.out" }, 5.18);
+    tl.set({}, {}, 6.4);
+    window.__timelines["01-ba-loai-dau-ra"] = tl;
+    })();
+  </script>
+</template>

@@ -1,0 +1,8 @@
+# Sourced by the bin/ scripts: $root, and $tts = gemini | none.
+# KIT_TTS overrides kit.config.json for one run.
+root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+tts="${KIT_TTS:-}"
+if [ -z "$tts" ] && [ -f "$root/kit.config.json" ]; then
+  tts="$(sed -n 's/.*"tts"[[:space:]]*:[[:space:]]*"\([a-z]*\)".*/\1/p' "$root/kit.config.json" | head -1)"
+fi
+case "${tts:-none}" in gemini|none) tts="${tts:-none}" ;; *) echo "kit: tts must be gemini or none, got '$tts'" >&2; exit 1 ;; esac

@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# The secure HyperFrames CLI under the offline profile.
+set -euo pipefail
+. "$(dirname "${BASH_SOURCE[0]}")/run"
+kit_tool=hyperframes
+[ -x "$kit_root/bundle/prefix/bin/hyperframes" ] || { echo "hyperframes: no bundle — run bin/setup" >&2; exit 1; }
+run_offline "$kit_root/bundle/prefix/bin/hyperframes" "$@"

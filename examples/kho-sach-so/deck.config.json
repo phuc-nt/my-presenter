@@ -1,0 +1,47 @@
+{
+  "name": "kho-sach-so",
+  "title": "Kho sách số",
+  "lang": "vi",
+  "theme": "win95",
+  "forbid": [
+    ".dev",
+    ".com",
+    ".vn",
+    "www."
+  ],
+  "chrome": {
+    "start": {
+      "icon": "shelf",
+      "label": "Start"
+    },
+    "tray": {
+      "icon": "user"
+    },
+    "desktop": [
+      {
+        "icon": "computer",
+        "label": "Máy tính"
+      },
+      {
+        "icon": "shelf",
+        "label": "Kho sách"
+      },
+      {
+        "icon": "chat",
+        "label": "Trợ lý"
+      },
+      {
+        "icon": "folder",
+        "label": "Tủ sách"
+      }
+    ],
+    "boot": [
+      "KHO SÁCH SỐ BIOS v1.0",
+      "Kiểm tra bộ nhớ ........ 8600 cuốn OK",
+      "Kiểm tra manga ......... 400 bộ OK",
+      "Nạp kệ sách, ô tìm, trợ lý ...",
+      "Đang khởi động Kho sách số"
+    ],
+    "bootSkip": "Bấm phím bất kỳ để bỏ qua"
+  }
+}

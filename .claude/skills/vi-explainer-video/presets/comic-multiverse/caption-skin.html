@@ -1,0 +1,190 @@
+<!--
+Comic multiverse — caption skin (vi-explainer-video preset).
+
+  Built from code-editorial's caption-skin.html (HyperFrames): the script, hooks and
+  reserved holes are unchanged; only the look differs. captions.mjs fills GROUPS,
+  DURATION, the canvas size and the :root tokens from frame.md.
+  Token contract: --cap-ink · --cap-canvas · --cap-accent · --cap-accent-2 ·
+  --font-display · --font-body · --cap-band-top · --cap-band-height.
+
+  Visual: a yellow comic narration box, 5px ink border, hard ink + cyan offset shadow,
+  Inter 800 (Anton and Bangers are too tight for a sentence of Vietnamese). Upcoming words
+  at 55% ink, the current word deep magenta, spoken words full ink. Look adapted from
+  bestagentkits/motion-video-skill (MIT).
+-->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+
+<!-- captions.mjs injects the project's :root tokens here -->
+<style data-brand-tokens></style>
+
+<style>
+  #captions-root {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+  .caption-layer {
+    position: absolute;
+    inset: 0;
+    z-index: 20;
+    pointer-events: none;
+  }
+  .caption-stage {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: var(--cap-band-top, 900px);
+    height: var(--cap-band-height, 180px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .caption-group {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+  }
+
+  /* yellow narration box: ink border, hard ink + cyan offset shadow.
+     Yellow and the active-word magenta are this style's fixed print colours. */
+  .caption-pill {
+    max-width: 1660px;
+    padding: 14px 34px 18px;
+    background: #ffd21f;
+    border: 5px solid var(--cap-ink, #0d0a1a);
+    border-radius: 4px;
+    box-shadow:
+      8px 8px 0 var(--cap-ink, #0d0a1a),
+      -5px -4px 0 var(--cap-accent, #19d3ff);
+  }
+  .caption-line {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.08em 0.26em;
+    font-family: var(--font-body, "Inter"), system-ui, sans-serif;
+    font-weight: 800;
+    font-size: clamp(34px, 3.8vw, 42px);
+    line-height: 1.3;
+  }
+
+  /* upcoming — ink at 55% on yellow */
+  .caption-word {
+    display: inline-block;
+    padding: 0 0.02em 0.04em;
+    color: color-mix(in srgb, var(--cap-ink, #0d0a1a) 55%, #ffd21f);
+  }
+  /* current — deep magenta */
+  .caption-word.is-active {
+    color: #a3005a;
+  }
+  /* spoken — full ink */
+  .caption-word.is-spoken {
+    color: var(--cap-ink, #0d0a1a);
+  }
+  .caption-word.cap-brand,
+  .caption-word.cap-num {
+    color: var(--cap-ink, #0d0a1a);
+  }
+  .caption-word.cap-cta {
+    color: #a3005a;
+  }
+
+  @media (max-aspect-ratio: 9/16) {
+    .caption-pill {
+      max-width: 92%;
+    }
+    .caption-line {
+      font-size: clamp(30px, 5vw, 40px);
+    }
+  }
+</style>
+
+<div
+  id="captions-root"
+  data-composition-id="captions"
+  data-timeline-locked
+  data-start="0"
+  data-duration="0"
+  data-fps="30"
+  data-width="0"
+  data-height="0"
+>
+  <div class="caption-layer" aria-hidden="true">
+    <div id="caption-stage" class="caption-stage"></div>
+  </div>
+</div>
+
+<script>
+  // captions.mjs injects the engine's scene-aware groups + real duration here.
+  var GROUPS = [];
+  var DURATION = 0;
+
+  (function () {
+    var stage = document.getElementById("caption-stage");
+
+    // build DOM: one .caption-group per group, .caption-word per word
+    GROUPS.forEach(function (group, g) {
+      var groupEl = document.createElement("div");
+      groupEl.className = "caption-group";
+      groupEl.id = "caption-group-" + g;
+      var pill = document.createElement("div");
+      pill.className = "caption-pill";
+      var line = document.createElement("div");
+      line.className = "caption-line";
+      (group.words || []).forEach(function (w, i) {
+        var span = document.createElement("span");
+        span.className = "caption-word";
+        span.id = "caption-word-" + g + "-" + i;
+        span.textContent = String(w.text);
+        line.appendChild(span);
+      });
+      pill.appendChild(line);
+      groupEl.appendChild(pill);
+      stage.appendChild(groupEl);
+    });
+
+    window.__timelines = window.__timelines || {};
+    var tl = gsap.timeline({ paused: true });
+
+    GROUPS.forEach(function (group, g) {
+      var groupEl = document.getElementById("caption-group-" + g);
+      var words = group.words || [];
+      var next = GROUPS[g + 1];
+      var isLast = g === GROUPS.length - 1;
+      var start = Math.max(0, Number(group.start));
+      var end = isLast ? DURATION : Math.min(Number(next.start), Number(group.end) + 0.3);
+      if (end <= start) end = start + 0.01;
+
+      // group on/off — exactly one group visible at a time
+      tl.set(groupEl, { opacity: 1 }, start);
+      tl.set(groupEl, { opacity: 0 }, end);
+
+      // 3-state karaoke via className SETS — seek-safe (gsap.set applies on the
+      // engine's frame-by-frame seek; .call callbacks would NOT fire).
+      words.forEach(function (w, i) {
+        var el = document.getElementById("caption-word-" + g + "-" + i);
+        var at = Math.max(start, Number(w.start));
+        tl.set(el, { className: "caption-word" }, start); // upcoming (also resets on reverse-seek)
+        tl.set(el, { className: "caption-word is-active" }, at); // current
+        tl.fromTo(el, { scale: 0.98 }, { scale: 1, duration: 0.16, ease: "power1.out" }, at);
+        if (i + 1 < words.length) {
+          var nextAt = Math.max(start, Number(words[i + 1].start));
+          tl.set(el, { className: "caption-word is-spoken" }, nextAt); // demote when next activates
+        }
+      });
+      if (words.length) {
+        var lastEl = document.getElementById("caption-word-" + g + "-" + (words.length - 1));
+        var lastSpoken = Math.min(end, Number(words[words.length - 1].end) + 0.1);
+        tl.set(lastEl, { className: "caption-word is-spoken" }, lastSpoken);
+      }
+    });
+
+    // full-span anchor so the sub-comp timeline spans the whole video
+    tl.to({}, { duration: DURATION }, 0);
+    window.__timelines["captions"] = tl;
+  })();
+</script>

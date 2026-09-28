@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# HTML decks: build, check, screenshots. Under the offline profile.
+set -euo pipefail
+. "$(dirname "${BASH_SOURCE[0]}")/run"
+kit_tool=deck
+run_offline node "$kit_root/tools/deck/bin/deck.js" "$@"

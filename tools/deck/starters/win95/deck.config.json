@@ -1,0 +1,17 @@
+{
+  "name": "deck",
+  "title": "Tên bài trình bày",
+  "lang": "vi",
+  "theme": "win95",
+  "forbid": [],
+  "chrome": {
+    "start": { "icon": "computer", "label": "Start" },
+    "tray": { "icon": "user" },
+    "desktop": [
+      { "icon": "computer", "label": "Máy tính" },
+      { "icon": "folder", "label": "Tài liệu" }
+    ],
+    "boot": ["BIOS v1.0", "Kiểm tra bộ nhớ ........ OK", "Đang khởi động"],
+    "bootSkip": "Bấm phím bất kỳ để bỏ qua"
+  }
+}
