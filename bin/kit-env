@@ -1,5 +1,8 @@
 # Sourced by the bin/ scripts: $root, and $tts = gemini | none.
 # KIT_TTS overrides kit.config.json for one run.
+case "$(uname -s)" in
+  MINGW*|MSYS*|CYGWIN*) echo "kit: native Windows is not supported; run the kit inside WSL2 (see GUIDE.md)" >&2; exit 1 ;;
+esac
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 tts="${KIT_TTS:-}"
 if [ -z "$tts" ] && [ -f "$root/kit.config.json" ]; then

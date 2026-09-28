@@ -18,7 +18,7 @@ With narration off, videos are silent with subtitles and the second connection d
 ## Quick start
 
 ```bash
-bin/setup --no-tts path/to/hyperframes-secure-darwin-arm64.tar.gz   # or --tts for narration, --no-video for slides only
+bin/setup --no-tts path/to/hyperframes-secure-<os>-<arch>.tar.gz   # or --tts for narration, --no-video for slides only
 bin/doctor
 bin/claude
 ```
@@ -29,7 +29,8 @@ Then describe the work, for example: "Make an HTML deck introducing product X fr
 
 ## Requirements
 
-- macOS on Apple Silicon. The offline profile uses `sandbox-exec`.
+- macOS on Apple Silicon, Linux with glibc (x64 or arm64), or Windows 10/11 through WSL2. The offline profile uses `sandbox-exec` on macOS and bubblewrap on Linux and WSL2. Windows outside WSL is not supported; see [GUIDE.md](GUIDE.md) for preparing WSL2.
+- Linux and WSL2: bubblewrap and socat.
 - Node.js 22 or newer, ffmpeg, Claude Code.
 - Chrome headless shell or Google Chrome.
 - The secure HyperFrames bundle, for video and HTML screenshots. Slides alone do not need it.
@@ -61,7 +62,7 @@ The choice lives in `kit.config.json` (not in git). Override it for one session 
 |---|---|
 | `bin/claude` session sandbox | Bash network beyond Gemini (narrated) or at all (silent); writes to the kit's code; reads of credential folders |
 | Session settings | Web tools, messaging other sessions, remote triggers, MCP servers, claude.ai connectors, bypass mode, credential-like environment variables |
-| `bin/offline/offline.sb` | For `hyperframes`, `deck`, `mpg`: network beyond localhost, DNS, other programs' sockets, opening URLs through other apps, writes outside the repo |
+| Offline profile (`bin/offline/`) | For `hyperframes`, `deck`, `mpg`: network beyond localhost, DNS, other programs' sockets, opening URLs through other apps (macOS), Windows programs and drives (WSL2), writes outside the repo |
 | Output checks | Network addresses, local paths, keys and forbidden words in decks; image metadata in HTML and PPTX |
 
 Details, the latest review and the known limits: [SECURITY.md](SECURITY.md).
@@ -69,8 +70,9 @@ Details, the latest review and the known limits: [SECURITY.md](SECURITY.md).
 ## Limits
 
 - The agent cannot hear audio or watch motion. Watch every video and click through every deck before presenting.
-- The offline profile and the bundled npm cache are for macOS on Apple Silicon only.
-- Rendering needs Chrome, which cannot start inside the session sandbox. The three kit tools may leave it because they apply their own offline profile; other commands need the user's approval.
+- The offline profile and the bundled npm cache cover macOS on Apple Silicon and Linux with glibc on x64 and arm64. The Linux profile has been tested in containers, not yet on a real WSL2 install.
+- The HyperFrames bundle is built per system; a Mac bundle does not work on Linux.
+- Rendering needs Chrome, which may not start inside the session sandbox. The three kit tools may leave it because they apply their own offline profile; other commands need the user's approval.
 
 ## Layout
 

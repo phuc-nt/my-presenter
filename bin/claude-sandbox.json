@@ -14,7 +14,8 @@
       "denyRead": [
         "@HOME@/.ssh", "@HOME@/.aws", "@HOME@/.gnupg", "@HOME@/.config/gh", "@HOME@/.netrc",
         "@HOME@/.kube", "@HOME@/.docker/config.json", "@HOME@/.npmrc", "@HOME@/.git-credentials",
-        "@HOME@/.config/gcloud", "@HOME@/Library/Keychains"
+        "@HOME@/.config/gcloud", "@HOME@/Library/Keychains", "@HOME@/.local/share/keyrings",
+        "@HOME@/.password-store", "/mnt"
       ]
     }
   },
@@ -43,6 +44,9 @@
       "Read(~/.npmrc)",
       "Read(~/.git-credentials)",
       "Read(~/Library/Keychains/**)",
+      "Read(~/.local/share/keyrings/**)",
+      "Read(~/.password-store/**)",
+      "Read(//mnt/**)",
       "Edit(/@ROOT@/bin/**)",
       "Edit(/@ROOT@/tools/**)",
       "Edit(/@ROOT@/vendor/**)",

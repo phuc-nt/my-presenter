@@ -28,7 +28,7 @@ To install the kit on a machine, follow [GUIDE.md](GUIDE.md). The rules below ar
 Chrome cannot start inside the session sandbox. For `hyperframes render`, `hyperframes snapshot`, `hyperframes check` and `deck shots`:
 
 1. Run the command on its own in one Bash call: no `cd`, `&&`, `;` or pipes.
-2. If it fails with a browser error, run exactly the same command again with the Bash sandbox disabled. That is pre-approved for `hyperframes`, `deck` and `mpg`, which then run under `bin/offline/offline.sb`.
+2. If it fails with a browser error, run exactly the same command again with the Bash sandbox disabled. That is pre-approved for `hyperframes`, `deck` and `mpg`, which then run under the kit's offline profile (`bin/offline/`).
 3. Never disable the sandbox for any other command.
 
 ## Secrets and content
@@ -47,6 +47,7 @@ Chrome cannot start inside the session sandbox. For `hyperframes render`, `hyper
 - Work in a plain Claude Code session, not `bin/claude`.
 - Run `npm test` in `tools/pptx` and `node --test` in `tools/deck` before reporting the work as done.
 - Keep `tools/deck/src/clean-image.js` and `tools/pptx/src/clean-image.js` identical.
+- Scripts in `bin/` run on macOS (bash 3.2, BSD tools) and on Linux and WSL2 (GNU tools). Keep them portable and LF-only, and test a change to `bin/offline/run` or `bin/doctor` on both, for Linux in a container with bubblewrap.
 - A change to `bin/claude`, `bin/claude-sandbox.json` or `bin/offline/` changes the security model: update [SECURITY.md](SECURITY.md) in the same change.
 - Commit with conventional commit messages and no AI attribution lines. Commit or push only when the user asks.
 

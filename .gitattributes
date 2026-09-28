@@ -1,0 +1,8 @@
+# The scripts run under bash in macOS, Linux and WSL2; CRLF line endings break them.
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.woff2 binary
+*.tgz binary
+# Licence texts stay byte for byte as published.
+.claude/skills/vi-explainer-video/assets/fonts/OFL-*.txt -text

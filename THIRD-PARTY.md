@@ -3,7 +3,7 @@
 | Component | Location | Licence | Notes |
 |---|---|---|---|
 | PPTX builder | `tools/pptx` | MIT; see `tools/pptx/LICENSE` | A copy of my-pptx-generator, extended with click builds, transitions and image metadata stripping |
-| npm packages of the PPTX builder | `vendor/npm-cache` | Each package's own licence: pptxgenjs, jszip, commander, zod, @resvg/resvg-js and their dependencies | darwin-arm64 builds only |
+| npm packages of the PPTX builder | `vendor/npm-cache` | Each package's own licence: pptxgenjs, jszip, commander, zod, @resvg/resvg-js and their dependencies | Native resvg builds for darwin-arm64, linux-x64-gnu and linux-arm64-gnu |
 | Fonts with Vietnamese coverage | `.claude/skills/vi-explainer-video/assets/fonts` | SIL Open Font License 1.1; the `OFL-*.txt` files sit beside the fonts | Subset to Latin and Vietnamese glyphs |
 | Video presets and audio scripts | `.claude/skills/vi-explainer-video/presets`, `scripts` | MIT | Adapted from bestagentkits/motion-video-skill; credit in each file |
 | HyperFrames, secure build | `bundle/` | HyperFrames licence | Not in git; `bin/setup` unpacks it from the tarball |

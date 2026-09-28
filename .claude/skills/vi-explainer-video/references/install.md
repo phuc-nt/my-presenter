@@ -34,14 +34,15 @@ Needed only when `KIT_TTS=gemini`. The user supplies their own key, obtained fro
 Store the key in the user's shell profile. **The user does this themselves**; the agent never receives, prints or writes the key:
 
 ```bash
-# the user adds this line to ~/.zshrc themselves, then opens a new terminal
+# the user adds this line to ~/.zshrc (zsh, the macOS default) or ~/.bashrc (bash, the
+# Linux and WSL default) themselves, then opens a new terminal
 export GEMINI_API_KEY="<key>"
 ```
 
 The agent only checks **whether** the key is present (the check prints `khoá Gemini: có`, "Gemini key: present", or `khoá Gemini: chưa có`, "Gemini key: not yet"). Never `echo` the key's value:
 
 ```bash
-[ -n "$GEMINI_API_KEY" ] || eval "$(grep -E '^[[:space:]]*export (GEMINI|GOOGLE)_API_KEY=' ~/.zshrc | tail -1)"
+[ -n "$GEMINI_API_KEY" ] || eval "$(cat ~/.zshrc ~/.bashrc 2>/dev/null | grep -E '^[[:space:]]*export (GEMINI|GOOGLE)_API_KEY=' | tail -1)"
 [ -n "$GEMINI_API_KEY$GOOGLE_API_KEY" ] && echo "khoá Gemini: có" || echo "khoá Gemini: chưa có"
 ```
 

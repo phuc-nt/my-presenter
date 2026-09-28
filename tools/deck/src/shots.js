@@ -14,7 +14,7 @@ function findChrome() {
   if (existsSync(cache)) for (const v of readdirSync(cache).sort().reverse()) for (const d of readdirSync(join(cache, v))) {
     const p = join(cache, v, d, 'chrome-headless-shell'); if (existsSync(p)) return p;
   }
-  for (const p of ['/Applications/Google Chrome.app/Contents/MacOS/Google Chrome', '/Applications/Chromium.app/Contents/MacOS/Chromium', '/usr/bin/chromium', '/usr/bin/google-chrome'])
+  for (const p of ['/Applications/Google Chrome.app/Contents/MacOS/Google Chrome', '/Applications/Chromium.app/Contents/MacOS/Chromium', '/usr/bin/chromium', '/usr/bin/google-chrome', '/opt/google/chrome/chrome'])
     if (existsSync(p)) return p;
   throw new Error('no Chrome found; set HYPERFRAMES_BROWSER_PATH to chrome-headless-shell or Chrome');
 }

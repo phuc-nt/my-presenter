@@ -12,6 +12,9 @@ ok()   { printf '  ✓ %-24s %s\n' "$1" "$2"; }
 miss() { printf '  ✗ %-24s %s\n' "$1" "$2"; bad=$((bad+1)); }
 skip() { printf '  – %-24s %s\n' "$1" "$2"; }
 have() { command -v "$1" >/dev/null 2>&1; }
+# Linux: no network interface but loopback, as inside Claude Code's sandbox. The
+# kernel's fallback tunnel devices (tunl0, gre0, sit0…) are always down; ignored.
+net_isolated() { [ "$(awk -F: 'NR>2 { gsub(/ /, "", $1); if ($1 !~ /^(lo|tunl0|gre0|gretap0|erspan0|ip_vti0|ip6_vti0|sit0|ip6tnl0|ip6gre0)$/) n++ } END { print n+0 }' /proc/net/dev 2>/dev/null)" = 0 ]; }
 
 echo "my-presenter · TTS: $tts"
 echo "General"
@@ -25,14 +28,28 @@ if [ "$(uname)" = Darwin ]; then
   else
     ok "system proxy" "none"
   fi
+elif [ "$(uname)" = Linux ]; then
+  if grep -qi microsoft /proc/version 2>/dev/null; then
+    # WSL1 has no Linux kernel and reports "Microsoft"; WSL2 kernels say "microsoft".
+    grep -q Microsoft /proc/version && miss "WSL" "WSL1; the kit needs WSL2 (wsl --set-version <distro> 2)" || ok "WSL" "WSL2"
+    on=; for f in /proc/sys/fs/binfmt_misc/WSLInterop*; do [ -f "$f" ] && head -1 "$f" | grep -q enabled && on=1; done
+    [ -z "$on" ] && ok "WSL interop" "off" || miss "WSL interop" "on: commands could start Windows programs outside every sandbox; see GUIDE.md"
+    case "$root" in /mnt/*) miss "repo location" "on a Windows drive; clone the repo into the Linux home instead" ;; *) ok "repo location" "Linux filesystem" ;; esac
+  fi
+  if ! have bwrap; then miss "bubblewrap" "not installed (apt install bubblewrap)"
+  elif bwrap --unshare-all --ro-bind / / /bin/true 2>/dev/null; then ok "bubblewrap" "network lock for the tools"
+  elif net_isolated; then skip "bubblewrap" "cannot nest inside this sandbox; run bin/doctor outside it to check"
+  else miss "bubblewrap" "installed but cannot create a sandbox; see GUIDE.md"; fi
+  have socat && ok "socat" "for the session sandbox" || miss "socat" "not installed (apt install socat)"
+  env | grep -qiE '^(https?|all)_proxy=' && skip "proxy variables" "set; the kit removes them for its tools" || ok "proxy variables" "none"
 else
-  miss "operating system" "the offline profile exists for macOS only"
+  miss "operating system" "$(uname) is not supported; use macOS, Linux, or WSL2 on Windows"
 fi
 
 chrome=${HYPERFRAMES_BROWSER_PATH:-}
 if [ -z "$chrome" ]; then
   chrome=$(ls -d "$HOME"/.cache/puppeteer/chrome-headless-shell/*/*/chrome-headless-shell 2>/dev/null | sort | tail -1)
-  [ -n "$chrome" ] || for c in "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" "/Applications/Chromium.app/Contents/MacOS/Chromium"; do [ -x "$c" ] && { chrome=$c; break; }; done
+  [ -n "$chrome" ] || for c in "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" "/Applications/Chromium.app/Contents/MacOS/Chromium" /opt/google/chrome/chrome /usr/bin/google-chrome /usr/bin/chromium; do [ -x "$c" ] && { chrome=$c; break; }; done
 fi
 [ -n "$chrome" ] && [ -x "$chrome" ] && ok "Chrome" "$(basename "$chrome")" || miss "Chrome" "set HYPERFRAMES_BROWSER_PATH"
 
@@ -49,7 +66,7 @@ have ffmpeg && have ffprobe && ok "ffmpeg, ffprobe" "" || miss "ffmpeg, ffprobe"
 
 echo "Narration"
 if [ "$tts" = gemini ]; then
-  if [ -n "${GEMINI_API_KEY:-}" ] || grep -Eq '^[[:space:]]*export GEMINI_API_KEY=' "$HOME/.zshrc" 2>/dev/null; then ok "GEMINI_API_KEY" "set (value not shown)"; else miss "GEMINI_API_KEY" "not set; see GUIDE.md"; fi
+  if [ -n "${GEMINI_API_KEY:-}" ] || cat "$HOME/.zshrc" "$HOME/.bashrc" 2>/dev/null | grep -Eq '^[[:space:]]*export GEMINI_API_KEY='; then ok "GEMINI_API_KEY" "set (value not shown)"; else miss "GEMINI_API_KEY" "not set; see GUIDE.md"; fi
   w=; for c in whisper-cli whisper-cpp; do have $c && w=$c; done
   [ -n "$w" ] && ok "whisper" "$w" || miss "whisper" "whisper-cpp not installed"
   m=$(ls "${HYPERFRAMES_WHISPER_MODEL:-/nonexistent}" "$HOME"/.cache/hyperframes/whisper/models/ggml-*.bin /opt/homebrew/share/whisper-cpp/ggml-*.bin 2>/dev/null | head -1)
@@ -61,8 +78,15 @@ fi
 
 if [ "${1:-}" = --net ]; then
   echo "Network (probed from here)"
-  # sandbox-exec cannot nest: when this probe succeeds, nothing holds the network shut.
-  if ! have sandbox-exec || sandbox-exec -p '(version 1)(allow default)' /usr/bin/true 2>/dev/null; then
+  # macOS: sandbox-exec cannot nest, so when this probe succeeds nothing holds the
+  # network shut. Linux: Claude Code's sandbox leaves only the loopback interface.
+  sandboxed=
+  if [ "$(uname)" = Darwin ]; then
+    have sandbox-exec && ! sandbox-exec -p '(version 1)(allow default)' /usr/bin/true 2>/dev/null && sandboxed=1
+  elif [ "$(uname)" = Linux ]; then
+    net_isolated && sandboxed=1
+  fi
+  if [ -z "$sandboxed" ]; then
     miss "sandbox" "not inside one; --net runs only inside a bin/claude session"
   else
     code() { curl -sS -m 12 -o /dev/null -w '%{http_code}' "$@" 2>/dev/null; }

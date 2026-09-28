@@ -12,7 +12,7 @@ Start every engine call with these two lines (see `install.md` §4). Never print
 
 ```bash
 ENGINE=$HF/media-use/audio/scripts/audio.mjs          # HF: see "Paths" in SKILL.md
-[ -n "$GEMINI_API_KEY" ] || eval "$(grep -E '^[[:space:]]*export (GEMINI|GOOGLE)_API_KEY=' ~/.zshrc | tail -1)"
+[ -n "$GEMINI_API_KEY" ] || eval "$(cat ~/.zshrc ~/.bashrc 2>/dev/null | grep -E '^[[:space:]]*export (GEMINI|GOOGLE)_API_KEY=' | tail -1)"
 ```
 
 ## §1. Generate the narration
