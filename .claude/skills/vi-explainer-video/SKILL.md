@@ -28,9 +28,9 @@ Most steps are HyperFrames commands, or actions the agent performs by following 
 
 ## How this kit runs
 
-The skill lives in the `my-presenter` kit. The session must be started with `bin/claude` at the repo root. In that session:
+The skill lives in the `my-presenter` kit. The session is best started with `bin/claude` at the repo root; a session from an IDE or a plain `claude` also works, under the rules in `AGENTS.md` ("Sessions without `bin/claude`").
 
-- `hyperframes` is on the PATH. It is the secure build in `bundle/`, and it runs with the network blocked.
+- In a `bin/claude` session, `hyperframes` is on the PATH. It is the secure build in `bundle/`, and it runs with the network blocked. In any other session, call it as `"$ROOT"/bin/hyperframes`, which is the same program under the same offline profile. Every `hyperframes …` command in this document means that.
 - **Never** run `npx`, `npm install`, `pip install`, `hyperframes add`, `hyperframes upgrade`, `hyperframes skills` or `hyperframes browser`. Nothing is downloaded during work.
 - The `KIT_TTS` variable sets the audio mode:
 
@@ -39,7 +39,7 @@ The skill lives in the `my-presenter` kit. The session must be started with `bin
 | `gemini` | Gemini TTS | Lyria, built-in SFX | Gemini only | sound and subtitles |
 | `none` | none | none | none | no sound, subtitles only |
 
-The user switches modes with `bin/setup --tts` or `bin/setup --no-tts`, then restarts the session. The agent never switches modes itself.
+The mode comes from `KIT_TTS`, or from `kit.config.json` when `KIT_TTS` is not set; `bin/doctor` prints it on its first line. The user switches modes with `bin/setup --tts` or `bin/setup --no-tts`, then restarts the session. The agent never switches modes itself.
 
 ## Paths used in this document
 
@@ -56,12 +56,12 @@ Each Bash command runs in a new shell, so declare the variables you need again i
 ## Step 0: check the machine
 
 ```bash
-ROOT=$(git rev-parse --show-toplevel); "$ROOT"/bin/doctor; echo "KIT_TTS=${KIT_TTS:-chưa đặt}"
+ROOT=$(git rev-parse --show-toplevel); "$ROOT"/bin/doctor; echo "bin/claude session: ${KIT_ROOT:+yes}${KIT_ROOT:-no}"
 ```
 
 - `doctor` reports something missing: stop, and tell the user exactly what is missing. Do not install anything. See `references/install.md`.
-- `KIT_TTS` is not set (the command prints `chưa đặt`, "not set"): the session was not started with `bin/claude`. Tell the user to restart it.
-- `KIT_TTS=none`: follow the workflow below, but replace steps 4, 5 and 7 with the **Silent mode** section.
+- The mode is on the first line: `TTS: gemini` or `TTS: none`. With `TTS: none`, follow the workflow below, but replace steps 4, 5 and 7 with the **Silent mode** section.
+- `bin/claude session: no`: carry on, calling `"$ROOT"/bin/hyperframes` wherever this document says `hyperframes`, and follow "Sessions without `bin/claude`" in `AGENTS.md`. In narrated mode, the Gemini key is read from the shell profile as `references/audio.md` shows.
 
 ## Fixed rules
 
@@ -354,3 +354,5 @@ Chrome cannot start inside the session sandbox. These commands need Chrome: `hyp
 1. Run the command **on its own** in a single Bash call: no `cd`, no `&&`, no `;`, no pipe. Use paths instead of `cd`.
 2. If the command reports a browser error, rerun the exact same command with the session sandbox disabled (`dangerouslyDisableSandbox: true`). This is pre-approved for `hyperframes`, `deck` and `mpg`. The tool then runs under the kit's own offline profile: no network, writes only inside the repo.
 3. Do not disable the sandbox for any other command.
+
+In a session without `bin/claude` there is no session sandbox: run these commands directly, by path (`bin/hyperframes`, `bin/deck`, `bin/mpg`), and never set `dangerouslyDisableSandbox`.

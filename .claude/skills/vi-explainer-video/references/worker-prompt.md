@@ -51,6 +51,37 @@ You are a HyperFrames frame worker. Before doing anything else, read these files
 - Language: on-screen copy is Vietnamese, taken from the packet. Literal identifiers stay exactly as written.
 - Never show personal data, tokens, secrets or private local paths.
 - Timing: the Scene times in the packet are real seconds, synced to the narration. Honor them. The frame must be complete and still by its last Scene end.
+- File shape: start from this skeleton. Do not look for other frames, the CLI's source or its docs to find the format; everything the file needs is here and in the four files above.
+  ```html
+  <template>
+    <style>
+      /* the @font-face block above */
+      #root { position: absolute; left: 0; top: 0; width: {W}px; height: {H}px; overflow: hidden; }
+      #f{NN}-bg { position: absolute; inset: 0; background: /* canvas colour from frame.md */; }
+      /* f{NN}-… rules; initial hidden states here, not in tl.set(…, 0) */
+    </style>
+    <div id="root" data-composition-id="{FRAME_ID}" data-width="{W}" data-height="{H}" data-duration="{DURATION}">
+      <div id="f{NN}-bg" class="clip" data-start="0" data-duration="{DURATION}" data-track-index="0"></div>
+      <div id="f{NN}-main" class="clip" data-start="0" data-duration="{DURATION}" data-track-index="1">
+        <!-- the frame's content -->
+      </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      (function () {
+        var tl = gsap.timeline({ paused: true });
+        /* one phase per Scene line, at its real second */
+        tl.set({}, {}, {DURATION});
+        window.__timelines = window.__timelines || {};
+        window.__timelines["{FRAME_ID}"] = tl;
+      })();
+    </script>
+  </template>
+  ```
+  - The file is exactly this one `<template>`: nothing before or after it. Every `<style>` and `<script>`, including the GSAP tag, stays inside it.
+  - Style the root through `#root`, never through a class on it. Paint the full-bleed background on the `#f{NN}-bg` clip, not on `#root`.
+  - Every `class="clip"` element carries `data-start`, `data-duration` and `data-track-index`.
+  - Keep the GSAP tag exactly as written. The kit's HyperFrames swaps it for a local copy; add no other `src` or `url()` to the network.
 {EXTRA}
 When done, reply with one line: the file path you wrote.
 <!-- END -->

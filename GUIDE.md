@@ -252,19 +252,24 @@ bin/mpg build decks/my-talk/pptx.json --out decks/my-talk/out/pptx
 
 The agent cannot hear audio or watch motion. Watch each video and click through each deck before presenting it.
 
-## How `bin/claude` differs from plain `claude`
+## How `bin/claude` differs from an IDE or plain `claude`
 
-| | `bin/claude` | plain `claude` |
+A session started from VS Code, another IDE or a plain `claude` in this repo can make decks and videos too. It loads `.claude/settings.json`, which denies the riskiest tools in every session, and `AGENTS.md`, which tells the agent what it must not do there. Nothing enforces the rest.
+
+| | `bin/claude` | IDE or plain `claude` |
 |---|---|---|
-| Bash commands | In a sandbox: network only to Gemini (narrated mode) or nowhere; no writes to the kit's code; no reads of `~/.ssh`, `~/.aws` and other credential folders | Unrestricted |
-| `hyperframes`, `deck`, `mpg` | Under the offline profile | Under the offline profile |
-| Settings, skills, MCP servers | This repo's only; no user-level skills, MCP servers or claude.ai connectors | All of the user's |
-| Web tools, messaging other sessions, remote triggers | Denied | Allowed |
-| Bypass-permissions mode | Refused | Allowed |
-| Environment | Credential-like variables removed | As in the shell |
+| Bash network | Only to Gemini (narrated mode) or nowhere | Unrestricted; the agent is told to stay offline |
+| `npx`, `npm install`, `pnpm`, `yarn`, `bun`, `brew`, `curl`, `wget`, `git clone`, `hyperframes add/upgrade/skills` | Denied | Denied by `.claude/settings.json` |
+| `hyperframes`, `deck`, `mpg` | Under the offline profile | Under the offline profile, called as `bin/hyperframes`, `bin/deck`, `bin/mpg` |
+| Credential folders (`~/.ssh`, `~/.aws` and others) | Unreadable | Read tool denied; Bash reads not blocked, the agent is told not to |
+| Writes to the kit's code | Blocked | Allowed |
+| Settings, skills, MCP servers | This repo's only; no user-level skills, MCP servers or claude.ai connectors | All of the user's load; the agent is told to use only this repo's skills and no MCP tools. Reading `~/.claude/skills` is denied |
+| Web tools, messaging other sessions, remote triggers, artifacts | Denied | Denied by `.claude/settings.json` |
+| Bypass-permissions mode | Refused | Allowed, but the denials above still hold |
+| Environment | Credential-like variables removed | As in the shell; the agent is told never to print it |
 | Telemetry, error reports, auto-update | Off | As configured |
 
-Use `bin/claude` for making decks and videos. Use a plain session only to work on the kit itself.
+Prefer `bin/claude` for sensitive material. An IDE session is fine for everyday decks and videos, and it is the one to use when working on the kit itself.
 
 ## Troubleshooting
 

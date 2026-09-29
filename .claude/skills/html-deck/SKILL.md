@@ -71,7 +71,35 @@ DeckHooks.flip = (el, instant, api) => {
 
 Use `api.later`, never `setTimeout`, so pending steps are cancelled when the slide changes. No `fetch`, no external `src`, no `<link>`, no `<iframe>`: the build refuses them.
 
-For real coordinates and class names, read `examples/kho-sach-so/slides.html` (win95) and `tools/deck/starters/plain/slides.html`. Copy structure, never content.
+For real coordinates and class names, read `examples/kho-sach-so/slides.html` (win95) and `tools/deck/starters/plain/slides.html`. Copy structure, never content. You do not need to read the engine or theme source.
+
+### What the `plain` theme gives you
+
+Slide padding is `96px 120px 110px` on the 1920×1080 stage, so content spans x 120–1800 and y 96–970. The bottom 64px hold the deck's own bar.
+
+| Variable | Use |
+|---|---|
+| `--bg`, `--panel`, `--line` | page, card fill, card border |
+| `--ink`, `--muted` | main text, secondary text |
+| `--accent`, `--warn` | one highlight per slide; callouts and the cursor |
+| `--body` | the font stack (Vietnamese-safe) |
+
+| Class | What it is |
+|---|---|
+| `h1`, `h2` | cover title (132px), slide headline (76px) |
+| `.lead`, `.by` | subtitle under a headline; byline at the bottom of the cover |
+| `.cover` | on the first `section`: centres the content vertically |
+| `.accent` | text in the accent colour |
+| `.bl` > `.b` > `.n` + `p` | numbered list: a list, its rows, the round number, the text (`<b>` in it is accented) |
+| `.cols`, `.cards3` | two-column grid; three equal cards |
+| `.card` (+ `p`) | panel with border and padding |
+| `.big` | a large accent number (150px) |
+| `.shot` > `img` | framed screenshot; put `.hl` (highlight box) and `.tip` (label) inside it, positioned absolutely |
+| `.btn`, `.key` | button and keyboard-key pictures, for `click` hooks |
+| `.prog` | progress bar container for `data-fx="blocks"` |
+| `.sel` | the selected item for the `select` hook |
+
+A deck may add its own `<style>` at the top of `slides.html` for anything the theme lacks. Use the variables above rather than new colours, and no `@import` or `url()` to the network.
 
 ## script.md
 
@@ -113,3 +141,5 @@ Chrome cannot start inside the session sandbox. The command here that needs it: 
 1. Run the command **on its own** in one Bash call: no `cd`, `&&`, `;` or pipes. Use paths instead of `cd`.
 2. If it fails with a browser error, run exactly the same command again with the Bash sandbox disabled (`dangerouslyDisableSandbox: true`). That is pre-approved for `hyperframes`, `deck` and `mpg`, which then run under the kit's own offline profile: no network, writes only inside the repo.
 3. Never disable the sandbox for any other command.
+
+In a session without `bin/claude` there is no session sandbox: run these commands directly, by path (`bin/hyperframes`, `bin/deck`, `bin/mpg`), and never set `dangerouslyDisableSandbox`.

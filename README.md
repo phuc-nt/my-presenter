@@ -23,6 +23,8 @@ bin/doctor
 bin/claude
 ```
 
+`bin/claude` gives the strongest protection. A session from VS Code or another IDE in this repo works too, with fewer guarantees: see [GUIDE.md](GUIDE.md#how-binclaude-differs-from-an-ide-or-plain-claude).
+
 Then describe the work, for example: "Make an HTML deck introducing product X from notes.md, win95 theme."
 
 [GUIDE.md](GUIDE.md) covers prerequisites, every setup option, the Gemini key, verification and troubleshooting. It is written so a coding agent can follow it to install the kit.
@@ -61,7 +63,8 @@ The choice lives in `kit.config.json` (not in git). Override it for one session 
 | Layer | What it blocks |
 |---|---|
 | `bin/claude` session sandbox | Bash network beyond Gemini (narrated) or at all (silent); writes to the kit's code; reads of credential folders |
-| Session settings | Web tools, messaging other sessions, remote triggers, MCP servers, claude.ai connectors, bypass mode, credential-like environment variables |
+| Project settings (`.claude/settings.json`, every session, IDE included) | `npx`, npm installs, `curl`, `wget`, `brew`, `git clone`, web tools, messaging other sessions, artifacts; Read of credential folders and user-level skills |
+| `bin/claude` session settings | Web tools, messaging other sessions, remote triggers, MCP servers, claude.ai connectors, bypass mode, credential-like environment variables |
 | Offline profile (`bin/offline/`) | For `hyperframes`, `deck`, `mpg`: network beyond localhost, DNS, other programs' sockets, opening URLs through other apps (macOS), Windows programs and drives (WSL2), writes outside the repo |
 | Output checks | Network addresses, local paths, keys and forbidden words in decks; image metadata in HTML and PPTX |
 

@@ -54,6 +54,8 @@ The pitfalls below were hit while building the first video (my-agent-crew, 11 fr
 | 26 | The Write tool reports "file changed since read" | Another command modified the file after it was read | Read it again (Read) before writing; prefer Edit |
 | 27 | The report says the video is "fine" but the user hears a problem | The agent cannot hear audio or see motion | State clearly what was checked and what was not; invite the user to watch and listen |
 | 38 | `zsh: command not found: npx -y hyperframes` | The command was stored in a variable `CLI="npx -y hyperframes"` and called as `$CLI`; zsh does not word-split variables | Step 0: write the command directly, not through a variable |
+| 39 | `zsh: == not found`, and the rest of a chained command never runs | zsh reads a word starting with `=` as `=cmd` expansion, so `echo ===STEP` fails | Use `echo "--- STEP"`, or quote the marker |
+| 40 | Workers spend dozens of commands reading other frames and CLI source before writing anything | The prompt did not show the file shape, so each worker rediscovered `<template>`, `#root`, clips and the timeline registration | The skeleton in `worker-prompt.md`; dispatch with the current template |
 
 ## Accepted, not fixed
 

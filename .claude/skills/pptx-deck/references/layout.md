@@ -68,7 +68,7 @@ def text_h(v, w, s, lh=1.3):
 
 The helper omits the kinsoku (line-break) rules the JS model applies, so it can
 be off by one line where a paragraph ends in Japanese punctuation. Budget the
-6px slack above and always confirm against `npx mpg validate --fit`.
+6px slack above and always confirm against `mpg validate --fit`.
 
 Stacking rule: `next.y = prev.y + text_h(prev) + gap` — never a fixed offset.
 
